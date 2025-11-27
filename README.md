@@ -1,111 +1,63 @@
 # Rewards App
 
-This project provides a small Spring Boot service that calculates reward points for customers based on their transaction history.  
-The application follows the rule set given in the assignment:
+This project provides a Spring Boot service for calculating customer reward points based on transaction history.  
+It supports **two operations**:
 
-- No points for the first $50.
-- $1 = 1 point for amounts between $50 and $100.
-- $1 = 2 points for every dollar spent above $100.
+1. **POST API** – Calculate rewards for a *specific date range*  
+2. **GET API** – Calculate rewards for the *most recent three months* (default behavior)
 
-Example:  
-A transaction of $120 → 90 points.
-
-The app exposes two APIs:
-1. Fetch reward summary for a single customer (last 3 months)
-2. Fetch reward summaries for all customers (last 3 months)
-
-The project uses an in-memory H2 database with sample data loaded through `data.sql`.
-
-## API Endpoints
-
-### 1. Rewards for a single customer (last 3 months)
-
-```
-GET /api/rewards/customer/{customerId}/three-months
-```
-
-```
-curl -X GET "http://localhost:8080/api/rewards/customer/3/three-months" -H "accept: application/json"
-```
-
-### 2. Rewards for all customers (last 3 months)
-
-```
-GET /api/rewards/summary/three-months
-```
-
-```
-curl -X GET "http://localhost:8080/api/rewards/summary/three-months" -H "accept: application/json"
-```
----
-
-## Swagger
-
-Swagger UI is available here:
-
-```
-http://localhost:8080/swagger-ui/index.html
-```
+The application uses an H2 in‑memory database with sample data populated via `data.sql`.
 
 ---
 
-## Project Structure
+# 📘 Reward Rules
 
-```
-src/main/java/com/rewards/points
- ├── controller
- ├── service
- ├── repository
- ├── dto
- ├── builder
- ├── model
- └── exception
+- No points for the first **$50**
+- **1 point** per dollar between **$50–$100**
+- **2 points** per dollar above **$100**
 
-src/test/java/com/rewards/points
- ├── controller tests
- └── service tests
-```
+**Example:**  
+A transaction of **$120 → 90 points**
 
 ---
 
-##Tech stack
+# 📌 API Endpoints
 
-Java 17
-Spring Boot 3
-Spring Web
-Spring Data JPA
-H2 In-Memory Database
-JUnit 5 / Mockito
-Swagger
+## 1️⃣ Calculate rewards for a date range  
+### **POST /api/rewards/calculate**
 
-## Reward Calculation
-
-All reward calculations are handled in `RewardPointsCalculator`.  
-Transactions are grouped month-wise and aggregated before building the final response.
-
-Each API returns:
-- Customer details  
-- Points earned per month  
-- Total points  
-- List of transactions with calculated points  
-
-Example response:
-
+#### Sample Request  
 ```json
 {
-  "customerId": 3,
-  "customerName": "Bob Johnson",
+  "customerId": 1,
+  "startDate": "2024-01-01",
+  "endDate": "2024-03-01"
+}
+```
+
+#### Sample Response  
+```json
+{
+  "customerId": 1,
+  "customerName": "John Doe",
   "monthlyPoints": {
-    "NOVEMBER": 90,
-    "OCTOBER": 30
+    "JANUARY": 90,
+    "FEBRUARY": 30
   },
   "totalPoints": 120,
+  "totalAmount": 240.0,
   "transactions": [
     {
-      "id": 9,
-      "date": "2025-11-21",
+      "id": 101,
+      "date": "2024-01-10",
       "amount": 120.0,
       "points": 90
+    },
+    {
+      "id": 102,
+      "date": "2024-02-15",
+      "amount": 80.0,
+      "points": 30
     }
   ]
 }
@@ -113,21 +65,107 @@ Example response:
 
 ---
 
-## Tests
+## 2️⃣ Get rewards for the default last 3 months  
+### **GET /api/rewards/customer/{customerId}**
 
-The project contains:
-- Service tests (reward calculation logic)
-- Controller tests (MockMvc)
+#### Example  
+```
+GET /api/rewards/customer/3
+```
 
-Run all tests with:
-
-```bash
-mvn test
+#### Sample Response  
+```json
+{
+  "customerId": 1,
+  "customerName": "John Doe",
+  "monthlyPoints": {
+    "DECEMBER": 60,
+    "JANUARY": 90,
+    "FEBRUARY": 30
+  },
+  "totalPoints": 180,
+  "totalAmount": 350.0,
+  "transactions": [
+    {
+      "id": 201,
+      "date": "2024-12-20",
+      "amount": 100.0,
+      "points": 50
+    },
+    {
+      "id": 202,
+      "date": "2025-01-10",
+      "amount": 120.0,
+      "points": 90
+    },
+    {
+      "id": 203,
+      "date": "2025-02-10",
+      "amount": 80.0,
+      "points": 30
+    }
+  ]
+}
 ```
 
 ---
 
-## Notes
+# 🗂 Project Structure
 
-- DTOs are separated from JPA entities.
-- Responses are built using a small builder helper to keep the service code clean.
+```
+src/main/java/com/rewards/app
+ ├── controller
+ ├── service
+ ├── repository
+ ├── dto
+ ├── model
+ └── exception
+
+src/test/java/com/rewards/app
+ ├── controller
+ └── service
+```
+
+---
+
+# 🛠 Tech Stack
+
+- Java 17  
+- Spring Boot 3  
+- Spring Web  
+- Spring Data JPA  
+- H2 Database  
+- Lombok  
+- Jakarta Validation  
+- JUnit 5 + Mockito  
+- Springdoc OpenAPI (Swagger)
+
+---
+
+# 📄 Swagger UI  
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+---
+
+# 🧪 Running Tests  
+```
+mvn test
+```
+
+Tests include:
+
+- Controller tests (MockMvc)
+- Service tests with boundary values
+- Validation tests
+- Error handling tests
+
+
+# ✅ Summary
+
+| API | Purpose | Date Range |
+
+| **POST /api/rewards/calculate** | User-provided calculation | Requires startDate + endDate |
+
+| **GET /api/rewards/customer/{id}** | Auto last 3 months | No params allowed |

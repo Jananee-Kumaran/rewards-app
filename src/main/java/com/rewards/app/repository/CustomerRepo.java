@@ -1,0 +1,6 @@
+package com.rewards.app.repository;
+
+import com.rewards.app.model.Customer;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CustomerRepo extends JpaRepository<Customer, Long> {}

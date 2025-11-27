@@ -1,2 +1,2 @@
-com\rewards\points\controller\RewardsControllerTest.class
-com\rewards\points\service\RewardsServiceTest.class
+com\rewards\app\controller\RewardsControllerTest.class
+com\rewards\app\service\RewardsServiceTest.class

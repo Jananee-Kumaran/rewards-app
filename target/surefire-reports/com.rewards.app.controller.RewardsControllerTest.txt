@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.rewards.app.controller.RewardsControllerTest
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.571 s -- in com.rewards.app.controller.RewardsControllerTest
