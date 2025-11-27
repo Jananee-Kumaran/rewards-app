@@ -7,11 +7,11 @@ com\rewards\app\RewardsAppApplication.class
 com\rewards\app\exception\CustomerNotFoundException.class
 com\rewards\app\dto\RewardRequest.class
 com\rewards\app\model\Customer.class
+com\rewards\app\service\RewardService.class
 com\rewards\app\dto\RewardResponse$RewardResponseBuilder.class
 com\rewards\app\repository\CustomerRepo.class
 com\rewards\app\dto\TransactionDto.class
 com\rewards\app\dto\RewardResponse.class
 com\rewards\app\service\DateRangeService.class
-com\rewards\app\service\RewardsService.class
 com\rewards\app\exception\GlobalExceptionHandler.class
 com\rewards\app\repository\TransactionRepo.class
