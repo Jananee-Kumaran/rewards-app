@@ -6,6 +6,8 @@ import com.rewards.app.model.Customer;
 import com.rewards.app.model.Transaction;
 import com.rewards.app.repository.CustomerRepo;
 import com.rewards.app.repository.TransactionRepo;
+import com.rewards.app.util.DateRangeService;
+import com.rewards.app.util.RewardPointsCalculator;
 import com.rewards.app.exception.CustomerNotFoundException;
 
 import org.springframework.stereotype.Service;
