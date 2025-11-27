@@ -10,7 +10,7 @@ The application uses an H2 in‑memory database with sample data populated via `
 
 ---
 
-# 📘 Reward Rules
+# Reward Rules
 
 - No points for the first **$50**
 - **1 point** per dollar between **$50–$100**
@@ -21,9 +21,9 @@ A transaction of **$120 → 90 points**
 
 ---
 
-# 📌 API Endpoints
+# API Endpoints
 
-## 1️⃣ Calculate rewards for a date range  
+## Calculate rewards for a date range  
 ### **POST /api/rewards/calculate**
 
 #### Sample Request  
@@ -65,7 +65,7 @@ A transaction of **$120 → 90 points**
 
 ---
 
-## 2️⃣ Get rewards for the default last 3 months  
+## Get rewards for the default last 3 months  
 ### **GET /api/rewards/customer/{customerId}**
 
 #### Example  
@@ -110,7 +110,7 @@ GET /api/rewards/customer/3
 
 ---
 
-# 🗂 Project Structure
+# Project Structure
 
 ```
 src/main/java/com/rewards/app
@@ -128,7 +128,7 @@ src/test/java/com/rewards/app
 
 ---
 
-# 🛠 Tech Stack
+# Tech Stack
 
 - Java 17  
 - Spring Boot 3  
@@ -142,14 +142,14 @@ src/test/java/com/rewards/app
 
 ---
 
-# 📄 Swagger UI  
+#  Swagger UI  
 ```
 http://localhost:8080/swagger-ui/index.html
 ```
 
 ---
 
-# 🧪 Running Tests  
+#  Running Tests  
 ```
 mvn test
 ```
@@ -162,7 +162,7 @@ Tests include:
 - Error handling tests
 
 
-# ✅ Summary
+# Summary
 
 | API | Purpose | Date Range |
 
