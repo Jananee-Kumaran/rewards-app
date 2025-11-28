@@ -1,5 +1,6 @@
 package com.rewards.app.service;
 
+import com.rewards.app.dto.MonthlyPointDto;
 import com.rewards.app.dto.TransactionDto;
 import com.rewards.app.dto.RewardResponse;
 import com.rewards.app.model.Customer;
@@ -13,8 +14,9 @@ import com.rewards.app.exception.CustomerNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.Month;
+import java.time.YearMonth;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class RewardService {
@@ -33,6 +35,7 @@ public class RewardService {
 	}
 
 	public RewardResponse getCustomerRewards(Long customerId, LocalDate start, LocalDate end) {
+
 		Customer customer = customerRepo.findById(customerId)
 				.orElseThrow(() -> new CustomerNotFoundException("Customer not found: " + customerId));
 
@@ -42,29 +45,38 @@ public class RewardService {
 
 		List<Transaction> purchases = transactionRepo.findByCustomerIdAndDateBetween(customerId, from, to);
 
-		Map<Month, Integer> monthly = new HashMap<>();
+		Map<YearMonth, Integer> monthAggregation = new HashMap<>();
+
 		List<TransactionDto> details = new ArrayList<>();
-		int total = 0;
+		int totalPoints = 0;
 		double totalAmount = 0;
 
-		for (Transaction p : purchases) {
-			int pts = calculator.calculate(p.getAmount());
-			total += pts;
-			totalAmount += p.getAmount();
-			monthly.merge(p.getDate().getMonth(), pts, Integer::sum);
+		for (Transaction t : purchases) {
 
-			details.add(TransactionDto.builder().id(p.getId()).date(p.getDate().toString()).amount(p.getAmount())
+			int pts = calculator.calculate(t.getAmount());
+
+			totalPoints += pts;
+			totalAmount += t.getAmount();
+
+			YearMonth ym = YearMonth.from(t.getDate());
+			monthAggregation.merge(ym, pts, Integer::sum);
+
+			details.add(TransactionDto.builder().id(t.getId()).date(t.getDate().toString()).amount(t.getAmount())
 					.points(pts).build());
 		}
 
+		List<MonthlyPointDto> monthlyPointList = monthAggregation.entrySet().stream()
+				.map(e -> new MonthlyPointDto(e.getKey().getYear(), e.getKey().getMonth().name(), e.getValue()))
+				.collect(Collectors.toList());
+
 		return RewardResponse.builder().customerId(customer.getId()).customerName(customer.getName())
-				.monthlyPoints(monthly).totalPoints(total).totalAmount(totalAmount).transactions(details).build();
+				.monthlyPoints(monthlyPointList).totalPoints(totalPoints).totalAmount(totalAmount).transactions(details)
+				.build();
 	}
 
 	public RewardResponse getCustomerRewards(Long customerId) {
 		LocalDate end = LocalDate.now();
 		LocalDate start = end.minusMonths(3);
-
 		return getCustomerRewards(customerId, start, end);
 	}
 }

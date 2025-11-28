@@ -40,10 +40,10 @@ A transaction of **$120 → 90 points**
 {
   "customerId": 1,
   "customerName": "John Doe",
-  "monthlyPoints": {
-    "JANUARY": 90,
-    "FEBRUARY": 30
-  },
+  "monthlyPoints": [
+    { "year": 2024, "month": "JANUARY", "points": 90 },
+    { "year": 2024, "month": "FEBRUARY", "points": 30 }
+  ],
   "totalPoints": 120,
   "totalAmount": 240.0,
   "transactions": [
@@ -76,13 +76,13 @@ GET /api/rewards/customer/3
 #### Sample Response  
 ```json
 {
-  "customerId": 1,
-  "customerName": "John Doe",
-  "monthlyPoints": {
-    "DECEMBER": 60,
-    "JANUARY": 90,
-    "FEBRUARY": 30
-  },
+  "customerId": 3,
+  "customerName": "Bob Johnson",
+  "monthlyPoints": [
+    { "year": 2024, "month": "DECEMBER", "points": 60 },
+    { "year": 2025, "month": "JANUARY", "points": 90 },
+    { "year": 2025, "month": "FEBRUARY", "points": 30 }
+  ],
   "totalPoints": 180,
   "totalAmount": 350.0,
   "transactions": [

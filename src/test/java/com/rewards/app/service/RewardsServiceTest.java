@@ -1,5 +1,6 @@
 package com.rewards.app.service;
 
+import com.rewards.app.dto.MonthlyPointDto;
 import com.rewards.app.dto.RewardResponse;
 import com.rewards.app.exception.CustomerNotFoundException;
 import com.rewards.app.model.Customer;
@@ -55,6 +56,7 @@ class RewardsServiceTest {
 		assertThat(resp.getTotalPoints()).isEqualTo(0);
 		assertThat(resp.getTotalAmount()).isEqualTo(0);
 		assertThat(resp.getTransactions()).isEmpty();
+		assertThat(resp.getMonthlyPoints()).isEmpty();
 	}
 
 	@Test
@@ -65,15 +67,15 @@ class RewardsServiceTest {
 		when(customerRepo.findById(1L)).thenReturn(Optional.of(new Customer(1L, "John")));
 
 		when(transactionRepo.findByCustomerIdAndDateBetween(eq(1L), any(), any()))
-				.thenReturn(List.of(new Transaction(1L, 1L, 50.0, date), // 0 pts
-						new Transaction(2L, 1L, 100.0, date), // 50 pts
-						new Transaction(3L, 1L, 101.0, date) // 52 pts
+				.thenReturn(List.of(new Transaction(1L, 1L, 50.0, date), // 0 points
+						new Transaction(2L, 1L, 100.0, date), // 50 points
+						new Transaction(3L, 1L, 101.0, date) // 52 points
 				));
 
 		RewardResponse resp = service.getCustomerRewards(1L, date, date.plusDays(1));
 
-		assertThat(resp.getTotalPoints()).isEqualTo(0 + 50 + 52);
-		assertThat(resp.getTotalAmount()).isEqualTo(50.0 + 100.0 + 101.0);
+		assertThat(resp.getTotalPoints()).isEqualTo(102);
+		assertThat(resp.getTotalAmount()).isEqualTo(251.0);
 	}
 
 	@Test
@@ -82,14 +84,21 @@ class RewardsServiceTest {
 		when(customerRepo.findById(1L)).thenReturn(Optional.of(new Customer(1L, "John")));
 
 		when(transactionRepo.findByCustomerIdAndDateBetween(eq(1L), any(), any()))
-				.thenReturn(List.of(new Transaction(1L, 1L, 120.0, LocalDate.of(2024, 1, 10)), // 90 pts
-						new Transaction(2L, 1L, 80.0, LocalDate.of(2024, 2, 5)) // 30 pts
+				.thenReturn(List.of(new Transaction(1L, 1L, 120.0, LocalDate.of(2024, 1, 10)), // 90 points
+						new Transaction(2L, 1L, 80.0, LocalDate.of(2024, 2, 5)) // 30 points
 				));
 
-		RewardResponse resp = service.getCustomerRewards(1L, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 2, 20));
+		RewardResponse resp = service.getCustomerRewards(1L, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 2, 28));
 
-		assertThat(resp.getMonthlyPoints().get(java.time.Month.JANUARY)).isEqualTo(90);
-		assertThat(resp.getMonthlyPoints().get(java.time.Month.FEBRUARY)).isEqualTo(30);
+		List<MonthlyPointDto> monthly = resp.getMonthlyPoints();
+
+		assertThat(monthly).hasSize(2);
+
+		assertThat(monthly).extracting("month").containsExactlyInAnyOrder("JANUARY", "FEBRUARY");
+
+		assertThat(monthly).extracting("year").containsOnly(2024);
+
+		assertThat(monthly).extracting("points").containsExactlyInAnyOrder(90, 30);
 	}
 
 	@Test
@@ -102,5 +111,6 @@ class RewardsServiceTest {
 		RewardResponse resp = service.getCustomerRewards(1L);
 
 		assertThat(resp).isNotNull();
+		assertThat(resp.getMonthlyPoints()).isEmpty();
 	}
 }

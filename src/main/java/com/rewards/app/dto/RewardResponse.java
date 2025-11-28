@@ -5,9 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Month;
 import java.util.List;
-import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -17,7 +15,7 @@ public class RewardResponse {
 
     private Long customerId;
     private String customerName;
-    private Map<Month, Integer> monthlyPoints;
+    private List<MonthlyPointDto> monthlyPoints;
     private Integer totalPoints;
     private Double totalAmount;
     private List<TransactionDto> transactions;
