@@ -21,62 +21,89 @@ import java.util.stream.Collectors;
 @Service
 public class RewardService {
 
-	private final CustomerRepo customerRepo;
-	private final TransactionRepo transactionRepo;
-	private final RewardPointsCalculator calculator;
-	private final DateRangeService dateRangeService;
+    private final CustomerRepo customerRepo;
+    private final TransactionRepo transactionRepo;
+    private final RewardPointsCalculator calculator;
+    private final DateRangeService dateRangeService;
 
-	public RewardService(CustomerRepo customerRepo, TransactionRepo transactionRepo, RewardPointsCalculator calculator,
-			DateRangeService dateRangeService) {
-		this.customerRepo = customerRepo;
-		this.transactionRepo = transactionRepo;
-		this.calculator = calculator;
-		this.dateRangeService = dateRangeService;
-	}
+    public RewardService(CustomerRepo customerRepo,
+                         TransactionRepo transactionRepo,
+                         RewardPointsCalculator calculator,
+                         DateRangeService dateRangeService) {
+        this.customerRepo = customerRepo;
+        this.transactionRepo = transactionRepo;
+        this.calculator = calculator;
+        this.dateRangeService = dateRangeService;
+    }
 
-	public RewardResponse getCustomerRewards(Long customerId, LocalDate start, LocalDate end) {
+    public RewardResponse getCustomerRewards(Long customerId, LocalDate start, LocalDate end) {
 
-		Customer customer = customerRepo.findById(customerId)
-				.orElseThrow(() -> new CustomerNotFoundException("Customer not found: " + customerId));
+        Customer customer = findCustomer(customerId);
+        LocalDate[] range = dateRangeService.resolveRange(start, end);
 
-		LocalDate[] range = dateRangeService.resolveRange(start, end);
-		LocalDate from = range[0];
-		LocalDate to = range[1];
+        List<Transaction> transactions = transactionRepo
+                .findByCustomerIdAndDateBetween(customerId, range[0], range[1]);
 
-		List<Transaction> purchases = transactionRepo.findByCustomerIdAndDateBetween(customerId, from, to);
+        List<TransactionDto> transactionDtos = buildTransactionDetails(transactions);
+        List<MonthlyPointDto> monthlyPoints = aggregateMonthlyPoints(transactions);
 
-		Map<YearMonth, Integer> monthAggregation = new HashMap<>();
+        return buildResponse(customer, monthlyPoints, transactionDtos);
+    }
 
-		List<TransactionDto> details = new ArrayList<>();
-		int totalPoints = 0;
-		double totalAmount = 0;
+    public RewardResponse getCustomerRewards(Long customerId) {
+        LocalDate end = LocalDate.now();
+        LocalDate start = end.minusMonths(3);
+        return getCustomerRewards(customerId, start, end);
+    }
 
-		for (Transaction t : purchases) {
+    private Customer findCustomer(Long customerId) {
+        return customerRepo.findById(customerId)
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found: " + customerId));
+    }
 
-			int pts = calculator.calculate(t.getAmount());
+    private List<TransactionDto> buildTransactionDetails(List<Transaction> transactions) {
+        return transactions.stream()
+                .map(t -> TransactionDto.builder()
+                        .id(t.getId())
+                        .date(t.getDate().toString())
+                        .amount(t.getAmount())
+                        .points(calculator.calculate(t.getAmount()))
+                        .build())
+                .collect(Collectors.toList());
+    }
 
-			totalPoints += pts;
-			totalAmount += t.getAmount();
+    private List<MonthlyPointDto> aggregateMonthlyPoints(List<Transaction> transactions) {
 
-			YearMonth ym = YearMonth.from(t.getDate());
-			monthAggregation.merge(ym, pts, Integer::sum);
+        Map<YearMonth, Integer> monthlyAggregation = new HashMap<>();
 
-			details.add(TransactionDto.builder().id(t.getId()).date(t.getDate().toString()).amount(t.getAmount())
-					.points(pts).build());
-		}
+        for (Transaction t : transactions) {
+            int points = calculator.calculate(t.getAmount());
+            YearMonth ym = YearMonth.from(t.getDate());
+            monthlyAggregation.merge(ym, points, Integer::sum);
+        }
 
-		List<MonthlyPointDto> monthlyPointList = monthAggregation.entrySet().stream()
-				.map(e -> new MonthlyPointDto(e.getKey().getYear(), e.getKey().getMonth().name(), e.getValue()))
-				.collect(Collectors.toList());
+        return monthlyAggregation.entrySet().stream()
+                .map(e -> new MonthlyPointDto(
+                        e.getKey().getYear(),
+                        e.getKey().getMonth().name(),
+                        e.getValue()))
+                .collect(Collectors.toList());
+    }
 
-		return RewardResponse.builder().customerId(customer.getId()).customerName(customer.getName())
-				.monthlyPoints(monthlyPointList).totalPoints(totalPoints).totalAmount(totalAmount).transactions(details)
-				.build();
-	}
+    private RewardResponse buildResponse(Customer customer,
+                                         List<MonthlyPointDto> monthlyPoints,
+                                         List<TransactionDto> transactions) {
 
-	public RewardResponse getCustomerRewards(Long customerId) {
-		LocalDate end = LocalDate.now();
-		LocalDate start = end.minusMonths(3);
-		return getCustomerRewards(customerId, start, end);
-	}
+        int totalPoints = transactions.stream().mapToInt(TransactionDto::getPoints).sum();
+        double totalAmount = transactions.stream().mapToDouble(TransactionDto::getAmount).sum();
+
+        return RewardResponse.builder()
+                .customerId(customer.getId())
+                .customerName(customer.getName())
+                .monthlyPoints(monthlyPoints)
+                .totalPoints(totalPoints)
+                .totalAmount(totalAmount)
+                .transactions(transactions)
+                .build();
+    }
 }
