@@ -30,8 +30,8 @@ A transaction of **$120 → 90 points**
 ```json
 {
   "customerId": 1,
-  "startDate": "2024-01-01",
-  "endDate": "2024-03-01"
+  "startDate": "2025-09-02",
+  "endDate": "2025-12-02"
 }
 ```
 
@@ -45,21 +45,7 @@ A transaction of **$120 → 90 points**
     { "year": 2024, "month": "FEBRUARY", "points": 30 }
   ],
   "totalPoints": 120,
-  "totalAmount": 240.0,
-  "transactions": [
-    {
-      "id": 101,
-      "date": "2024-01-10",
-      "amount": 120.0,
-      "points": 90
-    },
-    {
-      "id": 102,
-      "date": "2024-02-15",
-      "amount": 80.0,
-      "points": 30
-    }
-  ]
+  "totalAmount": 240.0
 }
 ```
 
@@ -70,41 +56,36 @@ A transaction of **$120 → 90 points**
 
 #### Example  
 ```
-GET /api/rewards/customer/3
+GET /api/rewards/customer/2
 ```
 
 #### Sample Response  
 ```json
 {
-  "customerId": 3,
-  "customerName": "Bob Johnson",
+  "customerId": 2,
+  "customerName": "Alice Smith",
   "monthlyPoints": [
-    { "year": 2024, "month": "DECEMBER", "points": 60 },
-    { "year": 2025, "month": "JANUARY", "points": 90 },
-    { "year": 2025, "month": "FEBRUARY", "points": 30 }
-  ],
-  "totalPoints": 180,
-  "totalAmount": 350.0,
-  "transactions": [
     {
-      "id": 201,
-      "date": "2024-12-20",
-      "amount": 100.0,
-      "points": 50
+      "year": 2025,
+      "month": "DECEMBER",
+      "points": 25,
+      "amount": 75
     },
     {
-      "id": 202,
-      "date": "2025-01-10",
-      "amount": 120.0,
-      "points": 90
+      "year": 2025,
+      "month": "NOVEMBER",
+      "points": 45,
+      "amount": 95
     },
     {
-      "id": 203,
-      "date": "2025-02-10",
-      "amount": 80.0,
-      "points": 30
+      "year": 2025,
+      "month": "OCTOBER",
+      "points": 110,
+      "amount": 130
     }
-  ]
+],
+  "totalPoints": 180,
+  "totalAmount": 300
 }
 ```
 
