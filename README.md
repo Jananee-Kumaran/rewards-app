@@ -100,6 +100,7 @@ src/main/java/com/rewards/app
  ├── repository
  ├── dto
  ├── model
+ ├── util
  └── exception
 
 src/test/java/com/rewards/app
