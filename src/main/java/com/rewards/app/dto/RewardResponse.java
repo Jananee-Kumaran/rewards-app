@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -17,6 +18,5 @@ public class RewardResponse {
     private String customerName;
     private List<MonthlyPointDto> monthlyPoints;
     private Integer totalPoints;
-    private Double totalAmount;
-    private List<TransactionDto> transactions;
+    private BigDecimal totalAmount;
 }

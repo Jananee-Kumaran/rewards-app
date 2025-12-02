@@ -18,11 +18,15 @@ import org.springframework.http.MediaType;
 
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @WebMvcTest(RewardsController.class)
 class RewardsControllerTest {
@@ -38,6 +42,7 @@ class RewardsControllerTest {
 
     @Test
     void testCalculateRewards_Success() throws Exception {
+
         RewardRequest req = RewardRequest.builder()
                 .customerId(1L)
                 .startDate(LocalDate.of(2024, 1, 1))
@@ -48,24 +53,28 @@ class RewardsControllerTest {
                 .customerId(1L)
                 .customerName("John Doe")
                 .totalPoints(120)
-                .totalAmount(240.0)
+                .totalAmount(BigDecimal.valueOf(240))
                 .monthlyPoints(List.of())
-                .transactions(List.of())
                 .build();
 
-        Mockito.when(rewardService.getCustomerRewards(Mockito.eq(1L), Mockito.any(), Mockito.any()))
-                .thenReturn(mockResp);
+        Mockito.when(rewardService.getCustomerRewards(
+                Mockito.eq(1L),
+                Mockito.any(),
+                Mockito.any())
+        ).thenReturn(mockResp);
 
         mvc.perform(post("/api/rewards/calculate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.customerId").value(1))
-                .andExpect(jsonPath("$.totalPoints").value(120));
+                .andExpect(jsonPath("$.totalPoints").value(120))
+                .andExpect(jsonPath("$.totalAmount").value(240));
     }
 
     @Test
     void testCalculateRewards_ValidationError() throws Exception {
+
         String badJson = """
                 {
                     "startDate": "2024-01-01",
@@ -82,20 +91,24 @@ class RewardsControllerTest {
 
     @Test
     void testCalculateRewards_CustomerNotFound() throws Exception {
+
         RewardRequest req = RewardRequest.builder()
                 .customerId(999L)
                 .startDate(LocalDate.now().minusMonths(1))
                 .endDate(LocalDate.now())
                 .build();
 
-        Mockito.when(rewardService.getCustomerRewards(Mockito.eq(999L), Mockito.any(), Mockito.any()))
-                .thenThrow(new CustomerNotFoundException("Customer not found: 999"));
+        Mockito.when(rewardService.getCustomerRewards(
+                Mockito.eq(999L),
+                Mockito.any(),
+                Mockito.any())
+        ).thenThrow(new CustomerNotFoundException("Customer not found: 999"));
 
         mvc.perform(post("/api/rewards/calculate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(req)))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("Customer not found: 999"));
+                .andExpect(jsonPath("$.error").value("Customer not found: 999"));
     }
 
     @Test
@@ -105,7 +118,7 @@ class RewardsControllerTest {
                 .customerId(1L)
                 .customerName("John")
                 .totalPoints(50)
-                .totalAmount(200.0)
+                .totalAmount(BigDecimal.valueOf(200))
                 .monthlyPoints(List.of(
                         new MonthlyPointDto(2024, "JANUARY", 30),
                         new MonthlyPointDto(2024, "FEBRUARY", 20)
@@ -125,11 +138,12 @@ class RewardsControllerTest {
 
     @Test
     void testGetCustomerRewards_CustomerNotFound() throws Exception {
+
         Mockito.when(rewardService.getCustomerRewards(999L))
                 .thenThrow(new CustomerNotFoundException("Customer not found: 999"));
 
         mvc.perform(get("/api/rewards/customer/999"))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("Customer not found: 999"));
+                .andExpect(jsonPath("$.error").value("Customer not found: 999"));
     }
 }

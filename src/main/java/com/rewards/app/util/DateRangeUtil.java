@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 
 @Component
-public class DateRangeService {
+public class DateRangeUtil {
 
 	public LocalDate[] resolveRange(LocalDate startDate, LocalDate endDate) {
 		if (startDate != null && endDate != null)

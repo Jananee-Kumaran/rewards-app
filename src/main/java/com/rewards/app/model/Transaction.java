@@ -4,8 +4,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
-import lombok.*;
-
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -15,12 +18,12 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class Transaction {
-    @Id
-    private Long id;
+	@Id
+	private Long id;
 
-    @Column(name = "customer_id")
-    private Long customerId;
+	@Column(name = "customer_id")
+	private Long customerId;
 
-    private Double amount;
-    private LocalDate date;
+	private BigDecimal amount;
+	private LocalDate date;
 }

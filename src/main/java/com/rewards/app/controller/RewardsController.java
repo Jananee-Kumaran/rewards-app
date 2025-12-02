@@ -30,7 +30,7 @@ public class RewardsController {
 		return ResponseEntity.ok(resp);
 	}
 
-	@Operation(summary = "Get rewards for a customer (default last 3 months if no params)")
+	@Operation(summary = "Get rewards for a customer (default last 3 monthss)")
 	@GetMapping("/customer/{customerId}")
 	public ResponseEntity<RewardResponse> getCustomerRewards(@PathVariable Long customerId) {
 
